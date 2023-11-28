@@ -17,7 +17,7 @@ public class Preprocessor {
     private void readFiles(){
         File folder = new File(folderPath);
         File[] fileList = folder.listFiles();
-        int fileCounter = 1;
+        int fileCounter = 0;
         for (File file : fileList) {
             if (file.isFile()) {
                 //Identify each file with an ID number
