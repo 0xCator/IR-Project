@@ -7,7 +7,7 @@ public class Preprocessor {
     private String folderPath;
     private HashMap<Integer, String> filenameList = new HashMap<>();
     private HashMap<String, PositionalIndex> positionalIndex = new HashMap<>();
-    private PorterStemmer stemmer = new PorterStemmer();
+    private Tokenizer tokenizer = new Tokenizer();
 
     Preprocessor(String filePath) {
         folderPath = new File("").getAbsolutePath() + filePath;
@@ -31,11 +31,10 @@ public class Preprocessor {
                     int wordCounter = 0;
 
                     while (line != null) {
-                        String[] words = line.split(" ");
+                        ArrayList<String> words = tokenizer.tokenize(line);
                         for (String word : words) {
-                            word = word.trim();
-                            word = stemmer.stem(word.toLowerCase());
 
+                            //Positional indexing
                             if (positionalIndex.get(word) == null) {
                                 //If the word isn't captured before, add it to the matrix
                                 PositionalIndex pos = new PositionalIndex();
@@ -52,7 +51,10 @@ public class Preprocessor {
                     }
                     fileCounter++;
                     reader.close();
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    System.err.println("Exception in Preprocessor class");
+                    System.err.println(e.getMessage());
+                }
             }
         }
     }
