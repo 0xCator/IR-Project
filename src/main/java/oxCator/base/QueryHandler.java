@@ -2,12 +2,53 @@ package oxCator.base;
 
 import java.util.*;
 
-public class QueryHandler {
-    private static HashMap<String, PositionalIndex> positionalIndex;
-    private Queue<String> termQueue;
-    private HashSet<Integer> documentSet;
-    private PorterStemmer stemmer = new PorterStemmer();
 
+
+
+
+enum NodeType {
+    TERM, NOT, OR, AND, COUNT
+}
+
+class ASTnode{
+    NodeType nodeType; 
+    ASTnode left; 
+    ASTnode right; 
+    String value;
+
+    public static  ASTnode mkastnode(NodeType nodeType, ASTnode left, ASTnode right){
+        ASTnode node = new ASTnode();
+        node.nodeType = nodeType;
+        node.left = left;
+        node.right = right;
+        return node;
+    }
+    public static ASTnode mkastleaf(NodeType nodeType, String value){
+        ASTnode node = new ASTnode();
+        node.nodeType = nodeType;
+        node.value = value;
+        node.left = null;
+        node.right = null;
+        return node;
+    }
+    public static ASTnode mkastunary(NodeType nodeType, ASTnode right){
+        ASTnode node = new ASTnode();
+        node.nodeType = nodeType;
+        node.right = right;
+        node.left = null;
+        return node;
+    }
+}
+
+
+public class QueryHandler {
+    private HashMap<String, PositionalIndex> positionalIndex;
+    private Queue<String> termQueue;
+    private Stack<ArrayList<Integer>> matrixStack = new Stack<>();
+    private HashSet<Integer> documentSet;
+    private ArrayList<String> tokens = new ArrayList<>();
+    private String token;
+    private int idx;
     QueryHandler(HashMap<String, PositionalIndex> positionalIndex, int docNumber) {
         this.positionalIndex = positionalIndex;
         documentSet = new HashSet<>();
@@ -15,17 +56,186 @@ public class QueryHandler {
             documentSet.add(i);
     }
 
-    public ArrayList<Integer> makeQuery(String query) {
+    private void nextToken() {
+        if (idx < tokens.size())
+            token = tokens.get(idx++);
+        else
+            token = null;
+    }
+    public void processQuery(String query){
+        tokens.clear(); 
+        idx = 0;
+        String[] terms = query.split(" ");
+        int j = 0;
+        for(int i = 0; i < terms.length; i++){
+            if(terms[i].equals("AND") || terms[i].equals("OR") || terms[i].equals("NOT")){
+                String tmp = "";
+                for(int k = j; k < i; k++){
+                    tmp += terms[k] + " ";
+                }
+                if(!tmp.equals("")){
+                    tmp = tmp.trim();
+                    tokens.add(tmp);
+                }
+                j = i + 1;
+                tokens.add(terms[i]);
+            }
+            if(i == terms.length - 1){
+                String tmp = "";
+                for(int k = j; k <= i; k++){
+                    tmp += terms[k] + " ";
+                }
+                if(!tmp.equals("")){
+                    tmp = tmp.trim();
+                    tokens.add(tmp);
+                }
+            }
+        }
+
+        nextToken();
+    }
+    public ArrayList<String> getTokens(){
+        return tokens;
+    }
+    
+    private ASTnode primary(){
+        ASTnode node = null; 
+        if(token.equals("NOT")){
+            nextToken();
+            node = ASTnode.mkastunary(NodeType.NOT, primary());
+        } else if(token.equals("AND") || token.equals("OR")){
+            throw new RuntimeException("Syntax error");
+        }else{
+            node = ASTnode.mkastleaf(NodeType.TERM, token);
+            nextToken();
+        }
+
+        return node;
+
+    }
+
+    private int precedence(NodeType nodeType){
+        switch(nodeType){
+            case NOT:
+                return 3;
+            case AND:
+                return 2;
+            case OR:
+                return 1;
+            default:
+                return 0;
+        }
+    }
+    private NodeType nodetype(String token){
+        switch(token){
+            case "NOT":
+                return NodeType.NOT;
+            case "AND":
+                return NodeType.AND;
+            case "OR":
+                return NodeType.OR;
+            default:
+                return NodeType.TERM;
+        }
+    }
+
+    private ASTnode expr(int ptp){
+        ASTnode left, right;
+        NodeType nodeType;
+        left = primary();
+
+        if(token == null){
+            return left;
+        }
+
+        nodeType = nodetype(token);
+        while(precedence(nodeType) > ptp){
+            nextToken(); 
+            right = expr(precedence(nodeType));
+            left = ASTnode.mkastnode(nodeType, left, right);
+            if(token == null){
+                return left;
+            }
+            nodeType = nodetype(token);
+        }
+        return left;
+
+    }
+    public void printAST(ASTnode node){
+        if(node.nodeType == NodeType.TERM){
+            System.out.print(node.value);
+        }
+        else{
+            System.out.print("(");
+            printAST(node.left);
+            switch(node.nodeType){
+                case NOT:
+                    System.out.print(" NOT ");
+                    break;
+                case AND:
+                    System.out.print(" AND ");
+                    break;
+                case OR:
+                    System.out.print(" OR ");
+                    break;
+                default:
+                    break;
+            }
+            printAST(node.right);
+            System.out.print(")");
+        }
+    }
+
+    public ArrayList<Integer> makeQuery(String Query){
+
+        processQuery(Query);
+        ASTnode node = expr(0);
+        genResult(node);
+        if(!matrixStack.isEmpty()){
+            return matrixStack.pop();
+        }
+        return null;
+    }
+
+    private void genResult(ASTnode node){
+        if(node == null){
+            return;
+        }
+        genResult(node.left);
+        genResult(node.right);
+        switch(node.nodeType){
+            case TERM:
+                matrixStack.push(phraseQuery(node.value));
+                break;
+            case NOT:
+                notOperation();
+                break;
+            case AND:
+                andOperation();
+                break;
+            case OR:
+                orOperation();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private ArrayList<Integer> phraseQuery(String query) {
         termQueue = new LinkedList<>();
         PositionalIndex result = null;
-        String[] termList = query.split(" ");
+        Tokenizer tokenizer = new Tokenizer();
+        ArrayList<String> termList = tokenizer.tokenize(query);
 
         for (String term : termList) {
-            termQueue.offer(stemmer.stem(term.trim().toLowerCase()));
+            termQueue.offer(term);
         }
 
         if (termQueue.size() == 1) {
             //A single word returns its posting list (documents only) as an array list)
+            // if the word is not in the index, return an empty array list
+            if (!positionalIndex.containsKey(termQueue.peek()))
+                return new ArrayList<>();
             return new ArrayList<>(positionalIndex.get(termQueue.poll()).getPostingList().keySet());
         }
 
@@ -90,5 +300,51 @@ public class QueryHandler {
         }
 
         return result;
+    }
+    private void notOperation() {
+        ArrayList<Integer> result = new ArrayList<>(documentSet);
+        ArrayList<Integer> termMatrix = matrixStack.pop();
+
+        for (int document : termMatrix)
+            result.remove(termMatrix.indexOf(document));
+
+        matrixStack.push(result);
+    }
+    private void orOperation() {
+        ArrayList<Integer> result = new ArrayList<>();
+
+        ArrayList<Integer> mat1 = new ArrayList<>(matrixStack.pop());
+        ArrayList<Integer> mat2 = new ArrayList<>(matrixStack.pop());
+
+        //Adding all values of each term, hashsets will handle the repetition
+        for (int i : mat1)
+            result.add(i);
+
+        for (int i : mat2)
+            result.add(i);
+
+        matrixStack.push(result);
+    }
+    private void andOperation() {
+        int p1 = 0, p2 = 0;
+
+        ArrayList<Integer> result = new ArrayList<>();
+        ArrayList<Integer> mat1 = new ArrayList<>(matrixStack.pop());
+        ArrayList<Integer> mat2 = new ArrayList<>(matrixStack.pop());
+
+        //Same implementation as the lecture
+        while (p1 != mat1.size() && p2 != mat2.size()) {
+            int i1 = mat1.get(p1), i2 = mat2.get(p2);
+            if (i1 == i2) {
+                result.add(mat1.get(p1));
+                p1++; p2++;
+            } else if (i1 > i2) {
+                p2++;
+            } else {
+                p1++;
+            }
+        }
+
+        matrixStack.push(result);
     }
 }
