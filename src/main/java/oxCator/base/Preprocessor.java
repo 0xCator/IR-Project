@@ -7,6 +7,8 @@ public class Preprocessor {
     private String folderPath;
     private HashMap<Integer, String> filenameList = new HashMap<>();
     private HashMap<String, PositionalIndex> positionalIndex = new HashMap<>();
+    // Outer map to store word counts for each document
+    private HashMap<Integer, HashMap<String, Integer>> documentWordCounts = new HashMap<>();
     private Tokenizer tokenizer = new Tokenizer();
 
     Preprocessor(String filePath) {
@@ -20,8 +22,11 @@ public class Preprocessor {
         int fileCounter = 0;
         for (File file : fileList) {
             if (file.isFile()) {
+
                 //Identify each file with an ID number
                 filenameList.put(fileCounter, file.getName());
+                HashMap<String, Integer> wordCounts = new HashMap<>(); // Inner map for word counts
+
 
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(file.getAbsolutePath()));
@@ -33,6 +38,9 @@ public class Preprocessor {
                     while (line != null) {
                         ArrayList<String> words = tokenizer.tokenize(line);
                         for (String word : words) {
+
+                            // Update word counts for the current document
+                            wordCounts.put(word, wordCounts.getOrDefault(word, 0) + 1);
 
                             //Positional indexing
                             if (positionalIndex.get(word) == null) {
@@ -49,6 +57,7 @@ public class Preprocessor {
                         }
                         line = reader.readLine();
                     }
+                    documentWordCounts.put(fileCounter, wordCounts); // Store word counts for the current document
                     fileCounter++;
                     reader.close();
                 } catch (Exception e) {
@@ -64,4 +73,5 @@ public class Preprocessor {
     }
 
     public HashMap<String, PositionalIndex> getPositionalIndex() { return positionalIndex; }
+    public HashMap<Integer, HashMap<String, Integer>> getDocumentWordCounts(){return documentWordCounts;}
 }
