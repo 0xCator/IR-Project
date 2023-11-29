@@ -9,6 +9,8 @@ public class Preprocessor {
     private HashMap<String, PositionalIndex> positionalIndex = new HashMap<>();
     // Outer map to store word counts for each document
     private HashMap<Integer, HashMap<String, Integer>> documentWordCounts = new HashMap<>();
+    private HashSet<String> discTerm = new HashSet<>();
+    private HashMap<String, ArrayList<Integer>> termFrequency = new HashMap<>();
     private Tokenizer tokenizer = new Tokenizer();
 
     Preprocessor(String filePath) {
@@ -16,8 +18,7 @@ public class Preprocessor {
         readFiles();
     }
 
-
-    private void readFiles(){
+    private void readFiles() {
         File folder = new File(folderPath);
         File[] fileList = folder.listFiles();
         int fileCounter = 0;
@@ -27,7 +28,6 @@ public class Preprocessor {
                 //Identify each file with an ID number
                 filenameList.put(fileCounter, file.getName());
                 HashMap<String, Integer> wordCounts = new HashMap<>(); // Inner map for word counts
-
 
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(file.getAbsolutePath()));
@@ -49,11 +49,11 @@ public class Preprocessor {
                                 PositionalIndex pos = new PositionalIndex();
                                 pos.addPosition(fileCounter, wordCounter);
                                 positionalIndex.put(word, pos);
+                                discTerm.add(word);
                             } else {
                                 //Otherwise, add the current file ID to this word's posting list
                                 positionalIndex.get(word).addPosition(fileCounter, wordCounter);
                             }
-
                             wordCounter++;
                         }
                         line = reader.readLine();
@@ -67,6 +67,25 @@ public class Preprocessor {
                 }
             }
         }
+        for (String word : discTerm) {
+
+            // Initialize the ArrayList for the current word
+            ArrayList<Integer> termFrequencyList = new ArrayList<>();
+
+            // Iterate over each document
+            for (Map.Entry<Integer, HashMap<String, Integer>> entry : documentWordCounts.entrySet()) {
+                HashMap<String, Integer> wordCountMap = entry.getValue();
+
+                // Check if the term exists in the current document
+                int frequency = wordCountMap.getOrDefault(word, 0);
+
+                // Add the term frequency to the list
+                termFrequencyList.add(frequency);
+            }
+
+            // Put the word and its term frequency list in the new HashMap
+            termFrequency.put(word, termFrequencyList);
+        }
     }
 
     public HashMap<Integer, String> getFilenameList() {
@@ -74,5 +93,5 @@ public class Preprocessor {
     }
 
     public HashMap<String, PositionalIndex> getPositionalIndex() { return positionalIndex; }
-    public HashMap<Integer, HashMap<String, Integer>> getDocumentWordCounts(){return documentWordCounts;}
+    public HashMap<String, ArrayList<Integer>> getTermFrequency(){return termFrequency;}
 }
