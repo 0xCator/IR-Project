@@ -4,14 +4,14 @@ import java.util.*;
 
 public class DocumentVector {
     private int dimensions, documentNumber;
-    private ArrayList<Double> weightValues;
+    private HashMap<String, Double> weightValues;
 
-    DocumentVector(int dim, int docNum) {
-        dimensions = dim;
+    DocumentVector(ArrayList<String> dimensions, int docNum) {
+        this.dimensions = dimensions.size();
         documentNumber = docNum;
-        weightValues = new ArrayList<>();
-        for (int i = 0; i < dim; i++)
-            weightValues.add(0.0);
+        weightValues = new HashMap<>();
+        for (String term : dimensions)
+            weightValues.put(term, 0.0);
     }
 
     public int getDimensions() {
@@ -19,7 +19,7 @@ public class DocumentVector {
     }
 
     //Sets the weight (tf-idf) value for a specific dimension
-    public void setDimension(int index, int tfRaw, int df) {
+    public void setDimension(String term, int tfRaw, int df) {
         double tfWeight, idf, weight;
         if (tfRaw == 0)
             tfWeight = 0;
@@ -30,14 +30,14 @@ public class DocumentVector {
 
         weight = tfWeight * idf;
 
-        weightValues.set(index, weight);
+        weightValues.replace(term, weight);
     }
 
     //Calculates the unit vector (dimension / length) and returns in an arraylist
     public ArrayList<Double> getUnitVector() {
-        ArrayList<Double> unitVector = (ArrayList<Double>) weightValues.clone();
+        ArrayList<Double> unitVector = parseValue(weightValues);
         double length = 0.0;
-        for (double value : weightValues)
+        for (double value : unitVector)
             length += Math.pow(value, 2);
         length = Math.sqrt(length);
         for (int i = 0; i < dimensions; i++) {
@@ -47,5 +47,12 @@ public class DocumentVector {
         }
 
         return unitVector;
+    }
+
+    private ArrayList<Double> parseValue(HashMap<String, Double> hashMap) {
+        ArrayList<Double> result = new ArrayList<>();
+        for (double value : hashMap.values())
+            result.add(value);
+        return result;
     }
 }
