@@ -16,6 +16,7 @@ public class Preprocessor {
         readFiles();
     }
 
+
     private void readFiles(){
         File folder = new File(folderPath);
         File[] fileList = folder.listFiles();
