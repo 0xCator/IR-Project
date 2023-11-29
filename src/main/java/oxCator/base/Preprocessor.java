@@ -16,6 +16,7 @@ public class Preprocessor {
     Preprocessor(String filePath) {
         folderPath = new File("").getAbsolutePath() + filePath;
         readFiles();
+        termFrequency();
     }
 
     private void readFiles() {
@@ -67,6 +68,9 @@ public class Preprocessor {
                 }
             }
         }
+
+    }
+    private void termFrequency(){
         for (String word : discTerm) {
 
             // Initialize the ArrayList for the current word
@@ -86,6 +90,10 @@ public class Preprocessor {
             // Put the word and its term frequency list in the new HashMap
             termFrequency.put(word, termFrequencyList);
         }
+        /*// Print the result
+        for (Map.Entry<String, ArrayList<Integer>> entry : termFrequency.entrySet()) {
+            System.out.println("Word: " + entry.getKey() + ", Document Frequency: " + entry.getValue());
+        }*/
     }
 
     public HashMap<Integer, String> getFilenameList() {
