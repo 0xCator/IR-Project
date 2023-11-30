@@ -9,7 +9,8 @@ public class Preprocessor {
     private HashMap<String, PositionalIndex> positionalIndex = new HashMap<>();
     private HashMap<String, ArrayList<Integer>> termFrequency = new HashMap<>();
     private HashMap<String, ArrayList<Double>> weightedTF, tfIDF, normalizedTF_IDF;
-    private HashMap<String, Double> df, idf, documentLength;
+    private HashMap<String, Double> df, idf;
+    private HashMap<Integer, Double> documentLength = new HashMap<>();
     private Tokenizer tokenizer = new Tokenizer();
 
     Preprocessor(String filePath) {
@@ -107,8 +108,33 @@ public class Preprocessor {
         for (String key : idf.keySet())
             idf.replace(key, Math.log10(filenameList.size() / idf.get(key)));
 
-        for (String key : idf.keySet())
-            System.out.println(key + " " + idf.get(key));
+        //Generate TF-IDF
+        tfIDF = (HashMap<String, ArrayList<Double>>) weightedTF.clone();
+        for (String key : tfIDF.keySet()) {
+            ArrayList<Double> vector = tfIDF.get(key);
+            for (int i = 0; i < vector.size(); i++)
+                vector.set(i, vector.get(i) * idf.get(key));
+        }
+
+        //Generate length
+        for (int i = 0; i < filenameList.size(); i++) {
+            double length = 0.0;
+            for (ArrayList<Double> weight : tfIDF.values())
+                length += Math.pow(weight.get(i), 2);
+            length = Math.sqrt(length);
+            documentLength.put(i, length);
+        }
+
+        //Generate normalized TF-IDF
+        normalizedTF_IDF = (HashMap<String, ArrayList<Double>>) tfIDF.clone();
+        for (String key : normalizedTF_IDF.keySet()) {
+            ArrayList<Double> vector = normalizedTF_IDF.get(key);
+            for (int i = 0; i < vector.size(); i++)
+                vector.set(i, vector.get(i) / documentLength.get(i));
+        }
+
+      for (Map.Entry<String, ArrayList<Double>> entry : normalizedTF_IDF.entrySet())
+          System.out.println("Word: " + entry.getKey() + " tfIDF: " + entry.getValue());
     }
 
     public HashMap<Integer, String> getFilenameList() {
@@ -136,7 +162,7 @@ public class Preprocessor {
     public HashMap<String, Double> getIdf() {
         return idf;
     }
-    public HashMap<String, Double> getDocumentLength() {
+    public HashMap<Integer, Double> getDocumentLength() {
         return documentLength;
     }
 
