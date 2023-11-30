@@ -7,16 +7,15 @@ public class Preprocessor {
     private String folderPath;
     private HashMap<Integer, String> filenameList = new HashMap<>();
     private HashMap<String, PositionalIndex> positionalIndex = new HashMap<>();
-    // Outer map to store word counts for each document
-    private HashMap<Integer, HashMap<String, Integer>> documentWordCounts = new HashMap<>();
-    private HashSet<String> discTerm = new HashSet<>();
     private HashMap<String, ArrayList<Integer>> termFrequency = new HashMap<>();
+    private HashMap<String, ArrayList<Double>> weightedTF, tfIDF, normalizedTF_IDF;
+    private HashMap<String, Double> df, idf, documentLength;
     private Tokenizer tokenizer = new Tokenizer();
 
     Preprocessor(String filePath) {
         folderPath = new File("").getAbsolutePath() + filePath;
         readFiles();
-        termFrequency();
+        generateMatrices();
     }
 
     private void readFiles() {
@@ -28,7 +27,7 @@ public class Preprocessor {
 
                 //Identify each file with an ID number
                 filenameList.put(fileCounter, file.getName());
-                HashMap<String, Integer> wordCounts = new HashMap<>(); // Inner map for word counts
+                //HashMap<String, Integer> wordCounts = new HashMap<>(); // Inner map for word counts
 
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(file.getAbsolutePath()));
@@ -41,8 +40,19 @@ public class Preprocessor {
                         ArrayList<String> words = tokenizer.tokenize(line);
                         for (String word : words) {
 
-                            // Update word counts for the current document
-                            wordCounts.put(word, wordCounts.getOrDefault(word, 0) + 1);
+                            //Term frequency creation
+                            if (termFrequency.get(word) == null) {
+                                //If the word isn't captured, generate a matrix (zeroes, document size)
+                                ArrayList<Integer> termVector = new ArrayList<>();
+                                for (int i = 0; i < fileList.length; i++)
+                                    termVector.add(0);
+                                termVector.set(fileCounter,termVector.get(fileCounter)+1);
+                                termFrequency.put(word, termVector);
+                            } else {
+                                //If the word is already caught, increment
+                                ArrayList<Integer> termVector = termFrequency.get(word);
+                                termVector.set(fileCounter, termVector.get(fileCounter)+1);
+                            }
 
                             //Positional indexing
                             if (positionalIndex.get(word) == null) {
@@ -50,7 +60,7 @@ public class Preprocessor {
                                 PositionalIndex pos = new PositionalIndex();
                                 pos.addPosition(fileCounter, wordCounter);
                                 positionalIndex.put(word, pos);
-                                discTerm.add(word);
+                                //discTerm.add(word);
                             } else {
                                 //Otherwise, add the current file ID to this word's posting list
                                 positionalIndex.get(word).addPosition(fileCounter, wordCounter);
@@ -59,7 +69,7 @@ public class Preprocessor {
                         }
                         line = reader.readLine();
                     }
-                    documentWordCounts.put(fileCounter, wordCounts); // Store word counts for the current document
+                    //documentWordCounts.put(fileCounter, wordCounts); // Store word counts for the current document
                     fileCounter++;
                     reader.close();
                 } catch (Exception e) {
@@ -70,36 +80,67 @@ public class Preprocessor {
         }
 
     }
-    private void termFrequency(){
-        for (String word : discTerm) {
 
-            // Initialize the ArrayList for the current word
-            ArrayList<Integer> termFrequencyList = new ArrayList<>();
+    private void generateMatrices() {
+        //Generate weighted TF
+        weightedTF = new HashMap<>();
+        for (String key : termFrequency.keySet()) {
+            ArrayList<Integer> regularTFVector = termFrequency.get(key);
+            ArrayList<Double> vector = new ArrayList<>();
 
-            // Iterate over each document
-            for (Map.Entry<Integer, HashMap<String, Integer>> entry : documentWordCounts.entrySet()) {
-                HashMap<String, Integer> wordCountMap = entry.getValue();
-
-                // Check if the term exists in the current document
-                int frequency = wordCountMap.getOrDefault(word, 0);
-
-                // Add the term frequency to the list
-                termFrequencyList.add(frequency);
+            for (int value : regularTFVector) {
+                if (value != 0)
+                    vector.add(1 + Math.log10(value));
+                else vector.add(0.0);
             }
 
-            // Put the word and its term frequency list in the new HashMap
-            termFrequency.put(word, termFrequencyList);
+            weightedTF.put(key, vector);
         }
-        /*// Print the result
-        for (Map.Entry<String, ArrayList<Integer>> entry : termFrequency.entrySet()) {
-            System.out.println("Word: " + entry.getKey() + ", Document Frequency: " + entry.getValue());
-        }*/
+
+        //Generate DF
+        df = new HashMap<>();
+        for (String key : positionalIndex.keySet())
+            df.put(key, (double) positionalIndex.get(key).getDocumentFrequency());
+
+        //Generate IDF
+        idf = (HashMap<String, Double>) df.clone();
+        for (String key : idf.keySet())
+            idf.replace(key, Math.log10(filenameList.size() / idf.get(key)));
+
+        for (String key : idf.keySet())
+            System.out.println(key + " " + idf.get(key));
     }
 
     public HashMap<Integer, String> getFilenameList() {
         return filenameList;
     }
 
-    public HashMap<String, PositionalIndex> getPositionalIndex() { return positionalIndex; }
-    public HashMap<String, ArrayList<Integer>> getTermFrequency(){return termFrequency;}
+    public HashMap<String, PositionalIndex> getPositionalIndex() {
+        return positionalIndex;
+    }
+    public HashMap<String, ArrayList<Integer>> getTermFrequency() {
+        return termFrequency;
+    }
+    public HashMap<String, Double> getDf() {
+        return df;
+    }
+    public HashMap<String, ArrayList<Double>> getWeightedTF() {
+        return weightedTF;
+    }
+    public HashMap<String, ArrayList<Double>> getTfIDF() {
+        return tfIDF;
+    }
+    public HashMap<String, ArrayList<Double>> getNormalizedTF_IDF() {
+        return normalizedTF_IDF;
+    }
+    public HashMap<String, Double> getIdf() {
+        return idf;
+    }
+    public HashMap<String, Double> getDocumentLength() {
+        return documentLength;
+    }
+
+    public static void main(String[] args) {
+        Preprocessor preprocessor = new Preprocessor("/files");
+    }
 }
