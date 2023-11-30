@@ -95,7 +95,21 @@ public class QueryHandler {
         nextToken();
     }
     public ArrayList<String> getTokens(){
-        return tokens;
+        PorterStemmer stemmer = new PorterStemmer();
+        ArrayList<String> tokensClone = (ArrayList<String>) tokens.clone();
+        for(int i= 0; i < tokensClone.size(); i++){
+            if(tokensClone.get(i).equals("AND") || tokensClone.get(i).equals("OR")){
+                tokensClone.remove(i);
+            }
+            if(tokensClone.get(i).equals("NOT")){
+                tokensClone.remove(i);
+                tokensClone.remove(i);
+            }
+            tokensClone.set(i, stemmer.stem(tokensClone.get(i)));
+            
+
+        }
+        return tokensClone;
     }
     
     private ASTnode primary(){

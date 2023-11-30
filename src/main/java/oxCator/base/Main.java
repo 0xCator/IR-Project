@@ -22,6 +22,7 @@ public class Main {
 
         while (!queryLine.equalsIgnoreCase("stop")) {
             ArrayList<Integer> result = handler.makeQuery(queryLine);
+            System.out.println(handler.getTokens());
             printResults(result);
             System.out.println("Enter 'stop' to end, or another query: ");
             queryLine = input.nextLine();
