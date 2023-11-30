@@ -1,6 +1,5 @@
 package oxCator.base;
 
-import javax.print.Doc;
 import java.util.*;
 
 public class ResultRanker {
@@ -42,8 +41,19 @@ public class ResultRanker {
     }
 
     private ArrayList<Integer> orderList(ArrayList<Integer> files, ArrayList<Double> scores) {
-
-        return new ArrayList<>();
+        ArrayList<Integer> result = new ArrayList<>();
+        ArrayList<Integer> filesCopy = (ArrayList<Integer>) files.clone();
+        ArrayList<Double> scoreCopy = (ArrayList<Double>) scores.clone();
+        while (result.size() != files.size()) {
+            double max = 0.0;
+            for (double score : scoreCopy)
+                max = Math.max(max, score);
+            int index = scoreCopy.indexOf(max);
+            result.add(filesCopy.get(index));
+            filesCopy.remove(index);
+            scoreCopy.remove(index);
+        }
+        return result;
     }
 
     private double dotProduct(ArrayList<Double> normVec1, ArrayList<Double> normVec2) {
