@@ -3,12 +3,11 @@ package oxCator.base;
 import java.util.*;
 
 public class DocumentVector {
-    private int dimensions, documentNumber;
+    private int dimensions;
     private HashMap<String, Double> weightValues;
 
-    DocumentVector(ArrayList<String> dimensions, int docNum) {
+    DocumentVector(ArrayList<String> dimensions) {
         this.dimensions = dimensions.size();
-        documentNumber = docNum;
         weightValues = new HashMap<>();
         for (String term : dimensions)
             weightValues.put(term, 0.0);
@@ -18,19 +17,28 @@ public class DocumentVector {
         return dimensions;
     }
 
+    public HashMap<String, Double> getWeightValues() {
+        return weightValues;
+    }
+
+    public ArrayList<Double> getVector() {
+        return parseValue(weightValues);
+    }
+
     //Sets the weight (tf-idf) value for a specific dimension
-    public void setDimension(String term, int tfRaw, int df) {
-        double tfWeight, idf, weight;
-        if (tfRaw == 0)
-            tfWeight = 0;
-        else
-            tfWeight = 1 + Math.log10(tfRaw);
+    public void setDimension(String term, double tfIDF) {
+        weightValues.replace(term, tfIDF);
+    }
 
-        idf = Math.log10(documentNumber / (double) df);
+    public double getLength() {
+        ArrayList<Double> vector = parseValue(weightValues);
+        double length = 0.0;
 
-        weight = tfWeight * idf;
+        for (double value : vector)
+            length += Math.pow(value, 2);
+        length = Math.sqrt(length);
 
-        weightValues.replace(term, weight);
+        return length;
     }
 
     //Calculates the unit vector (dimension / length) and returns in an arraylist
@@ -42,7 +50,6 @@ public class DocumentVector {
         length = Math.sqrt(length);
         for (int i = 0; i < dimensions; i++) {
             double unitDimension = unitVector.get(i) / length;
-            unitDimension = Math.ceil(unitDimension * 100.0) / 100.0;
             unitVector.set(i, unitDimension);
         }
 
