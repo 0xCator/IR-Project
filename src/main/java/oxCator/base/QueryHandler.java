@@ -99,16 +99,45 @@ public class QueryHandler {
     public ArrayList<String> getTokens(){
         String[] queryTokens = query.split(" ");
         ArrayList<String> tokens = new ArrayList<>();
+        ArrayList<String> removeedTokens = new ArrayList<>();
+        ArrayList<String> orTokens = new ArrayList<>();
+        ArrayList<String> andTokens= new ArrayList<>();
         for(int i =0; i< queryTokens.length; i++){
-            if(queryTokens[i].equals("AND") || queryTokens[i].equals("OR")){
+            if(queryTokens[i].equals("NOT")){
+                
+                for (int j = i+1; j < queryTokens.length; j++, i++) {
+                    if(queryTokens[j].equals("AND") || queryTokens[j].equals("OR")|| queryTokens[j].equals("NOT")){
+                        break;
+                    }
+                    removeedTokens.add(queryTokens[j]);
+                }
+                continue;
+            }else if(queryTokens[i].equals("AND")){
+                for (int j = i+1; j < queryTokens.length; j++, i++) {
+                    if(queryTokens[j].equals("AND") || queryTokens[j].equals("OR")|| queryTokens[j].equals("NOT")){
+                        break;
+                    }
+                    andTokens.add(queryTokens[j]);
+                }
+                continue;
+            }else if(queryTokens[i].equals("OR")){
+                for (int j = i+1; j < queryTokens.length; j++, i++) {
+                    if(queryTokens[j].equals("AND") || queryTokens[j].equals("OR")|| queryTokens[j].equals("NOT")){
+                        break;
+                    }
+                    orTokens.add(queryTokens[j]);
+                }
                 continue;
             }
-            else if(queryTokens[i].equals("NOT")){
-                i++;
-                continue;
-            }
-            tokens.add(queryTokens[i]);
+            andTokens.add(queryTokens[i]);
         }
+        for(String token : removeedTokens){
+            if(andTokens.contains(token)){
+                andTokens.remove(token);
+            }
+        }
+        tokens.addAll(orTokens);
+        tokens.addAll(andTokens);
         return tokens;
     }
     
@@ -257,6 +286,9 @@ public class QueryHandler {
             //Merges a sequence of words
             if (result == null) {
                 result = positionalIndex.get(termQueue.poll());
+            }
+            if(!positionalIndex.containsKey(termQueue.peek())){
+                return new ArrayList<>();
             }
             PositionalIndex term2 = positionalIndex.get(termQueue.poll());
 
