@@ -49,6 +49,7 @@ public class QueryHandler {
     private ArrayList<String> tokens = new ArrayList<>();
     private String token;
     private int idx;
+    private String query;
     QueryHandler(HashMap<String, PositionalIndex> positionalIndex, int docNumber) {
         this.positionalIndex = positionalIndex;
         documentSet = new HashSet<>();
@@ -63,6 +64,7 @@ public class QueryHandler {
             token = null;
     }
     public void processQuery(String query){
+        this.query = query;
         tokens.clear(); 
         idx = 0;
         String[] terms = query.split(" ");
@@ -95,21 +97,11 @@ public class QueryHandler {
         nextToken();
     }
     public ArrayList<String> getTokens(){
-        PorterStemmer stemmer = new PorterStemmer();
-        ArrayList<String> tokensClone = (ArrayList<String>) tokens.clone();
-        for(int i= 0; i < tokensClone.size(); i++){
-            if(tokensClone.get(i).equals("AND") || tokensClone.get(i).equals("OR")){
-                tokensClone.remove(i);
-            }
-            if(tokensClone.get(i).equals("NOT")){
-                tokensClone.remove(i);
-                tokensClone.remove(i);
-            }
-            tokensClone.set(i, stemmer.stem(tokensClone.get(i)));
-            
+        String[] queryTokens = query.split(" ");
+        ArrayList<String> tokens = new ArrayList<>(Arrays.asList(queryTokens));
 
-        }
-        return tokensClone;
+        tokens.removeAll(Arrays.asList("AND", "OR", "NOT"));
+        return tokens;
     }
     
     private ASTnode primary(){
