@@ -98,9 +98,17 @@ public class QueryHandler {
     }
     public ArrayList<String> getTokens(){
         String[] queryTokens = query.split(" ");
-        ArrayList<String> tokens = new ArrayList<>(Arrays.asList(queryTokens));
-
-        tokens.removeAll(Arrays.asList("AND", "OR", "NOT"));
+        ArrayList<String> tokens = new ArrayList<>();
+        for(int i =0; i< queryTokens.length; i++){
+            if(queryTokens[i].equals("AND") || queryTokens[i].equals("OR")){
+                continue;
+            }
+            else if(queryTokens[i].equals("NOT")){
+                i++;
+                continue;
+            }
+            tokens.add(queryTokens[i]);
+        }
         return tokens;
     }
     
