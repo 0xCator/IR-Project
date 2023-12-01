@@ -320,7 +320,7 @@ public class QueryHandler {
         ArrayList<Integer> termMatrix = matrixStack.pop();
 
         for (int document : termMatrix)
-            result.remove(termMatrix.indexOf(document));
+            result.remove(result.indexOf(document));
 
         matrixStack.push(result);
     }
