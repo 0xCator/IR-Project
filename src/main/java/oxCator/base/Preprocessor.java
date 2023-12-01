@@ -111,9 +111,10 @@ public class Preprocessor {
         //Generate TF-IDF
         tfIDF = (HashMap<String, ArrayList<Double>>) weightedTF.clone();
         for (String key : tfIDF.keySet()) {
-            ArrayList<Double> vector = tfIDF.get(key);
+            ArrayList<Double> vector = (ArrayList<Double>) tfIDF.get(key).clone();
             for (int i = 0; i < vector.size(); i++)
                 vector.set(i, vector.get(i) * idf.get(key));
+            tfIDF.replace(key, vector);
         }
 
         //Generate length
@@ -128,9 +129,10 @@ public class Preprocessor {
         //Generate normalized TF-IDF
         normalizedTF_IDF = (HashMap<String, ArrayList<Double>>) tfIDF.clone();
         for (String key : normalizedTF_IDF.keySet()) {
-            ArrayList<Double> vector = normalizedTF_IDF.get(key);
+            ArrayList<Double> vector = (ArrayList<Double>) normalizedTF_IDF.get(key).clone();
             for (int i = 0; i < vector.size(); i++)
                 vector.set(i, vector.get(i) / documentLength.get(i));
+            normalizedTF_IDF.replace(key, vector);
         }
     }
 

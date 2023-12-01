@@ -17,6 +17,7 @@ public class Main {
 
         handler = new QueryHandler(positionalIndex, fileList.size());
         ranker = new ResultRanker(preProc.getNormalizedTF_IDF(), preProc.getIdf());
+
         Scanner input = new Scanner(System.in);
 
         System.out.println("Welcome to the best IR system, part two!\nEnter Query:");

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<GridPane gridLinesVisible="true" prefHeight="680.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="oxCator.base.UIController">
+<columnConstraints>
+  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+</columnConstraints>
+<rowConstraints>
+  <RowConstraints maxHeight="235.0" minHeight="10.0" prefHeight="153.0" vgrow="SOMETIMES" />
+  <RowConstraints maxHeight="572.0" minHeight="10.0" prefHeight="527.0" vgrow="SOMETIMES" />
+</rowConstraints>
+ <children>
+    <VBox alignment="TOP_CENTER" prefWidth="900.0" spacing="10.0">
+       <children>
+          <Label text="AlliGoogle" textAlignment="CENTER" textFill="#2ed70c">
+             <font>
+                <Font name="Century Gothic Bold" size="27.0" />
+             </font>
+             <VBox.margin>
+                <Insets />
+             </VBox.margin>
+          </Label>
+          <HBox alignment="TOP_CENTER" prefWidth="200.0">
+             <children>
+                <TextField promptText="Enter query" />
+                <Button mnemonicParsing="false" text="Search" />
+             </children>
+          </HBox>
+          <Label fx:id="errorLabel" text="Error text" textFill="RED" visible="false">
+          </Label>
+       </children>
+    </VBox>
+      <Accordion fx:id="accordionPane" prefWidth="900.0" GridPane.rowIndex="1">
+        <panes>
+          <TitledPane fx:id="preProcPane" text="Preprocessing">
+               <content>
+                  <TabPane prefHeight="322.0" prefWidth="638.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                        <Tab text="Index">
+                            <content>
+                                <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <TreeView fx:id="indexTree" prefHeight="200.0" prefWidth="200.0" showRoot="false" BorderPane.alignment="CENTER" />
+                                 </center></BorderPane>
+                            </content>
+                        </Tab>
+                        <Tab text="TF">
+                        <content>
+                          <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <TableView fx:id="tfTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </center></BorderPane>
+                        </content>
+                        </Tab>
+                        <Tab text="Weighted TF">
+                        <content>
+                          <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <TableView fx:id="weightedTFTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </center></BorderPane>
+                        </content>
+                        </Tab>
+                        <Tab text="DF">
+                            <content>
+                                <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <TableView fx:id="dfTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                      <columns>
+                                        <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Term" />
+                                        <TableColumn editable="false" prefWidth="75.0" sortable="false" text="DF" />
+                                      </columns>
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </center></BorderPane>
+                            </content>
+                        </Tab>
+                        <Tab text="IDF">
+                            <content>
+                                <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <TableView fx:id="idfTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                      <columns>
+                                        <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Term" />
+                                        <TableColumn editable="false" prefWidth="75.0" sortable="false" text="IDF" />
+                                      </columns>
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </center></BorderPane>
+                            </content>
+                        </Tab>
+                        <Tab text="TF-IDF">
+                            <content>
+                                <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <center>
+                                        <TableView fx:id="tfIDFTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                            <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                            </columnResizePolicy>
+                                        </TableView>
+                                    </center>
+                                </BorderPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Length">
+                            <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                <center>
+                                <TableView fx:id="lengthTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                    <columns>
+                                        <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Document" />
+                                        <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Length" />
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                    </columnResizePolicy>
+                                </TableView>
+                                </center>
+                            </BorderPane>
+                        </Tab>
+                        <Tab text="Normalized TF-IDF">
+                            <content>
+                                <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <center>
+                                        <TableView fx:id="normalizedTF_IDFTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                            <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                            </columnResizePolicy>
+                                        </TableView>
+                                    </center>
+                                </BorderPane>
+                            </content>
+                        </Tab>
+                    </tabs>
+                  </TabPane>
+               </content>
+          </TitledPane>
+          <TitledPane fx:id="resultsPane" animated="true" text="Results">
+              <content>
+                  <TabPane prefHeight="322.0" prefWidth="638.0" tabClosingPolicy="UNAVAILABLE">
+                      <tabs>
+                          <Tab text="Files">
+                              <content>
+                                  <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                              </content>
+                          </Tab>
+                          <Tab text="Calculations">
+                              <content>
+                                  <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                              </content>
+                          </Tab>
+                      </tabs>
+                  </TabPane>
+              </content>
+          </TitledPane>
+        </panes>
+      </Accordion>
+ </children>
+</GridPane>
