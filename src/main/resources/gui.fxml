@@ -26,8 +26,8 @@
           </Label>
           <HBox alignment="TOP_CENTER" prefWidth="200.0">
              <children>
-                <TextField promptText="Enter query" />
-                <Button mnemonicParsing="false" text="Search" />
+                <TextField fx:id="searchBox" promptText="Enter query" />
+                <Button mnemonicParsing="false" onAction="#search" text="Search" />
              </children>
           </HBox>
           <Label fx:id="errorLabel" text="Error text" textFill="RED" visible="false">
@@ -155,7 +155,10 @@
                       <tabs>
                           <Tab text="Files">
                               <content>
-                                  <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                  <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <ListView fx:id="filesList" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                 </center></BorderPane>
                               </content>
                           </Tab>
                           <Tab text="Calculations">

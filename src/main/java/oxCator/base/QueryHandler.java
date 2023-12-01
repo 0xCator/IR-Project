@@ -357,7 +357,7 @@ public class QueryHandler {
         matrixStack.push(result);
     }
     private void orOperation() {
-        ArrayList<Integer> result = new ArrayList<>();
+        HashSet<Integer> result = new HashSet<>();
 
         ArrayList<Integer> mat1 = new ArrayList<>(matrixStack.pop());
         ArrayList<Integer> mat2 = new ArrayList<>(matrixStack.pop());
@@ -369,7 +369,7 @@ public class QueryHandler {
         for (int i : mat2)
             result.add(i);
 
-        matrixStack.push(result);
+        matrixStack.push(new ArrayList<>(result));
     }
     private void andOperation() {
         int p1 = 0, p2 = 0;

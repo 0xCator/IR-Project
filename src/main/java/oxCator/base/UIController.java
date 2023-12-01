@@ -27,6 +27,8 @@ public class UIController {
     public TableView tfIDFTable;
     public TableView lengthTable;
     public TableView normalizedTF_IDFTable;
+    public TextField searchBox;
+    public ListView filesList;
 
     public UIController() {
         preProc = new Preprocessor(folderPath);
@@ -54,6 +56,38 @@ public class UIController {
         setThreeDimensionalTable(preProc.getWeightedTF(), weightedTFTable);
         setThreeDimensionalTable(preProc.getTfIDF(), tfIDFTable);
         setThreeDimensionalTable(preProc.getNormalizedTF_IDF(), normalizedTF_IDFTable);
+    }
+
+    //Searching
+    public void search() {
+        if (!searchBox.getText().isBlank()) {
+            errorLabel.setVisible(false);
+            filesList.getItems().clear();
+            String queryLine = searchBox.getText();
+
+            ArrayList<Integer> result = new ArrayList<>();
+            ArrayList<String> tokens = new ArrayList<>();
+
+            try {
+                result = handler.makeQuery(queryLine);
+                tokens = handler.getTokens();
+
+                if (result.size() != 0 && tokens.size() != 0) {
+                    result = ranker.rank(result, tokens);
+                }
+
+                setResultsBox(result);
+            } catch (Exception e) {
+                errorLabel.setVisible(true);
+                errorLabel.setText("Invalid syntax");
+            }
+        }
+    }
+
+    private void setResultsBox(ArrayList<Integer> result) {
+        for (int index : result)
+            filesList.getItems().add(fileList.get(index));
+        accordionPane.setExpandedPane(resultsPane);
     }
 
     //Preprocessing-related tables

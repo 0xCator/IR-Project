@@ -164,8 +164,4 @@ public class Preprocessor {
     public HashMap<Integer, Double> getDocumentLength() {
         return documentLength;
     }
-
-    public static void main(String[] args) {
-        Preprocessor preprocessor = new Preprocessor("/files");
-    }
 }
