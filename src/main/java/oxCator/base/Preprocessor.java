@@ -132,9 +132,6 @@ public class Preprocessor {
             for (int i = 0; i < vector.size(); i++)
                 vector.set(i, vector.get(i) / documentLength.get(i));
         }
-
-      for (Map.Entry<String, ArrayList<Double>> entry : normalizedTF_IDF.entrySet())
-          System.out.println("Word: " + entry.getKey() + " tfIDF: " + entry.getValue());
     }
 
     public HashMap<Integer, String> getFilenameList() {

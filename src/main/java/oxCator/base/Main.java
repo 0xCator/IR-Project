@@ -8,6 +8,7 @@ public class Main {
     public static HashMap<Integer, String> fileList;
     public static Preprocessor preProc;
     public static QueryHandler handler;
+    public static ResultRanker ranker;
 
     public static void main(String[] args) {
         preProc = new Preprocessor(folderPath);
@@ -15,6 +16,7 @@ public class Main {
         positionalIndex = preProc.getPositionalIndex();
 
         handler = new QueryHandler(positionalIndex, fileList.size());
+        ranker = new ResultRanker(preProc.getNormalizedTF_IDF(), preProc.getIdf());
         Scanner input = new Scanner(System.in);
 
         System.out.println("Welcome to the best IR system, part two!\nEnter Query:");
@@ -22,7 +24,13 @@ public class Main {
 
         while (!queryLine.equalsIgnoreCase("stop")) {
             ArrayList<Integer> result = handler.makeQuery(queryLine);
-            System.out.println(handler.getTokens());
+            ArrayList<String> tokens = handler.getTokens();
+
+            //If results exist and are rankable, rank them.
+            if (result.size() != 0 && tokens.size() != 0) {
+                result = ranker.rank(result, tokens);
+            }
+
             printResults(result);
             System.out.println("Enter 'stop' to end, or another query: ");
             queryLine = input.nextLine();
