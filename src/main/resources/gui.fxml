@@ -151,9 +151,9 @@
           </TitledPane>
           <TitledPane fx:id="resultsPane" animated="true" text="Results">
               <content>
-                  <TabPane prefHeight="322.0" prefWidth="638.0" tabClosingPolicy="UNAVAILABLE">
+                  <TabPane fx:id="resultsTabPane" prefHeight="322.0" prefWidth="638.0" tabClosingPolicy="UNAVAILABLE">
                       <tabs>
-                          <Tab text="Files">
+                          <Tab fx:id="filesTab" text="Files">
                               <content>
                                   <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                  <center>
@@ -163,7 +163,14 @@
                           </Tab>
                           <Tab text="Calculations">
                               <content>
-                                  <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                  <BorderPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <center>
+                                    <TableView fx:id="calTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </center></BorderPane>
                               </content>
                           </Tab>
                       </tabs>

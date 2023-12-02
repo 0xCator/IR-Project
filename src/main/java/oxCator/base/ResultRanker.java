@@ -6,10 +6,12 @@ public class ResultRanker {
     private HashMap<String, ArrayList<Double>> normalizedTF_IDF;
     private HashMap<String, Double> idf;
     private PorterStemmer stemmer = new PorterStemmer();
+    private UIController controller;
 
-    ResultRanker(HashMap<String, ArrayList<Double>> tfIDF, HashMap<String, Double> idf) {
+    ResultRanker(HashMap<String, ArrayList<Double>> tfIDF, HashMap<String, Double> idf, UIController controller) {
         this.normalizedTF_IDF = tfIDF;
         this.idf = idf;
+        this.controller = controller;
     }
 
     public ArrayList<Integer> rank(ArrayList<Integer> files, ArrayList<String> query) {
@@ -23,29 +25,62 @@ public class ResultRanker {
     private ArrayList<Double> calculateSimilarity(ArrayList<Integer> files, ArrayList<String> query) {
         ArrayList<Double> result = new ArrayList<>();
         ArrayList<String> uniqueQuery = makeUnique(query);
+        HashMap<String, ArrayList<String>> uiMap = new HashMap<>();
 
         //Step 1: Create query vector
         DocumentVector queryVector = new DocumentVector(uniqueQuery);
         for (String term : uniqueQuery) {
+            ArrayList<String> uiList = new ArrayList<>();
             //Count the frequency of the term IN THE QUERY
-            double termTF = 1 + Math.log10(Collections.frequency(query, term));
-            queryVector.setDimension(term, termTF * idf.get(term));
+            int tf = Collections.frequency(query, term);
+            double termTF = 1 + Math.log10(tf);
+            double termIDF = idf.get(term);
+            double tfIDF = termTF * termIDF;
+            //UI related calculations
+            uiList.add(term);
+            uiList.add((double)tf + "");
+            uiList.add(termTF + "");
+            uiList.add(termIDF + "");
+            uiList.add(tfIDF + "");
+            uiMap.put(term, uiList);
+            //Appending to the queryVector
+            queryVector.setDimension(term, tfIDF);
         }
         ArrayList<Double> normalizedQueryVector = queryVector.getUnitVector();
 
+        //More UI related calculations
+        for (String term : uniqueQuery) {
+            uiMap.get(term).add(queryVector.getWeightValues().get(term) / queryVector.getLength() + " ");
+            uiMap.get(term).add("");
+        }
+
+        ArrayList<String> sumProduct = new ArrayList<>();
+        for (int i = 0; i < 6; i++) sumProduct.add("");
+        sumProduct.add("Sum");
+        for (int i = 0; i < files.size(); i++) sumProduct.add(0 + "");
+
         //Step 2: Create document(s) vector
         ArrayList<DocumentVector> documentVectors = new ArrayList<>();
+        int p = 0;
         for (int file : files) {
             DocumentVector vector = new DocumentVector(uniqueQuery);
             for (String term : uniqueQuery) {
                 vector.setDimension(term, normalizedTF_IDF.get(term).get(file));
+                //UI related calculations
+                double product = normalizedTF_IDF.get(term).get(file) * (queryVector.getWeightValues().get(term) / queryVector.getLength());
+                uiMap.get(term).add(product + "");
+                sumProduct.set(7 + p, Double.parseDouble(sumProduct.get(7 + p)) + product + "");
             }
+            p++;
             documentVectors.add(vector);
         }
 
+        uiMap.put("~Sum", sumProduct);
         //Step 3: Dot Product
         for (DocumentVector vector : documentVectors)
             result.add(dotProduct(normalizedQueryVector, vector.getVector()));
+
+        controller.setCalTable(files, queryVector.getLength(), uiMap, result);
 
         return result;
     }

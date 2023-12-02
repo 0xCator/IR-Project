@@ -29,13 +29,16 @@ public class UIController {
     public TableView normalizedTF_IDFTable;
     public TextField searchBox;
     public ListView filesList;
+    public TableView calTable;
+    public Tab filesTab;
+    public TabPane resultsTabPane;
 
     public UIController() {
         preProc = new Preprocessor(folderPath);
         fileList = preProc.getFilenameList();
         positionalIndex = preProc.getPositionalIndex();
         handler = new QueryHandler(positionalIndex, fileList.size());
-        ranker = new ResultRanker(preProc.getNormalizedTF_IDF(), preProc.getIdf());
+        ranker = new ResultRanker(preProc.getNormalizedTF_IDF(), preProc.getIdf(), this);
     }
 
     @FXML
@@ -63,14 +66,13 @@ public class UIController {
         if (!searchBox.getText().isBlank()) {
             errorLabel.setVisible(false);
             filesList.getItems().clear();
+            calTable.getColumns().clear();
+            calTable.getItems().clear();
             String queryLine = searchBox.getText();
 
-            ArrayList<Integer> result = new ArrayList<>();
-            ArrayList<String> tokens = new ArrayList<>();
-
             try {
-                result = handler.makeQuery(queryLine);
-                tokens = handler.getTokens();
+                ArrayList<Integer> result = handler.makeQuery(queryLine);
+                ArrayList<String> tokens = handler.getTokens();
 
                 if (result.size() != 0 && tokens.size() != 0) {
                     result = ranker.rank(result, tokens);
@@ -84,10 +86,59 @@ public class UIController {
         }
     }
 
+    public void setCalTable(ArrayList<Integer> matchedFiles, double queryLength, HashMap<String, ArrayList<String>> map, ArrayList<Double> sim) {
+        ArrayList<String> emptyRow = new ArrayList<>();
+
+        String[] titleList = {"", "TF", "Weighted TF", "IDF", "TF-IDF", "Normalized", ""};
+        int i = 0;
+        for (; i < titleList.length; i++) {
+            TableColumn<calculationRecord, String> column = new TableColumn<>(titleList[i]);
+            column.setSortable(false);
+            int temp = i;
+            column.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().values().get(temp)));
+            calTable.getColumns().add(column);
+        }
+
+        for (int j = 0; j < titleList.length + matchedFiles.size(); j++) emptyRow.add("");
+
+        HashSet<Integer> files = new HashSet<>(matchedFiles);
+        for (int fileID : files) {
+            TableColumn<calculationRecord, String> docColumn = new TableColumn<>("Prod(" + fileList.get(fileID) + ")");
+            docColumn.setSortable(false);
+            int temp = i;
+            docColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().values().get(temp)));
+            calTable.getColumns().add(docColumn);
+            i++;
+        }
+
+        SortedSet<String> keys = new TreeSet<>(map.keySet());
+        for (String key : keys) {
+            calTable.getItems().add(new calculationRecord(map.get(key)));
+        }
+
+        calTable.getItems().add(new calculationRecord(emptyRow));
+
+        ArrayList<String> queryLen = new ArrayList<>();
+        queryLen.add("Query length: " + queryLength);
+        for (i = 0; i < calTable.getColumns().size() - 1; i++) queryLen.add("");
+        calTable.getItems().add(new calculationRecord(queryLen));
+
+        calTable.getItems().add(new calculationRecord(emptyRow));
+
+        for (i = 0; i < sim.size(); i++) {
+            ArrayList<String> similarityRow = new ArrayList<>();
+            similarityRow.add("Sim(q," + fileList.get(matchedFiles.get(i)) + "): " + sim.get(i));
+            for (int j = 0; j < calTable.getColumns().size() - 1; j++) similarityRow.add("");
+            calTable.getItems().add(new calculationRecord(similarityRow));
+        }
+    }
+
     private void setResultsBox(ArrayList<Integer> result) {
         for (int index : result)
             filesList.getItems().add(fileList.get(index));
         accordionPane.setExpandedPane(resultsPane);
+        SelectionModel<Tab> selectionModel = resultsTabPane.getSelectionModel();
+        selectionModel.select(filesTab);
     }
 
     //Preprocessing-related tables

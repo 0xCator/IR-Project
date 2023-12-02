@@ -11,3 +11,5 @@ record lengthRecord(String document, double length) {}
 record threeDimRecord(String term, ArrayList<Double> values) {}
 
 record threeDimIntRecord(String term, ArrayList<Integer> values) {}
+
+record calculationRecord(ArrayList<String> values) {}
