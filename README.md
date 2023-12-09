@@ -14,6 +14,7 @@ This is an information retrieval system made using java.
 ## NOTE
 
 This program runs in java 18.
+
 Files must be in `.txt` format, saved in `files` folder.
 
 
