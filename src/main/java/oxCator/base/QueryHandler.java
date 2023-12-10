@@ -99,45 +99,16 @@ public class QueryHandler {
     public ArrayList<String> getTokens(){
         String[] queryTokens = query.split(" ");
         ArrayList<String> tokens = new ArrayList<>();
-        ArrayList<String> removeedTokens = new ArrayList<>();
-        ArrayList<String> orTokens = new ArrayList<>();
-        ArrayList<String> andTokens= new ArrayList<>();
         for(int i =0; i< queryTokens.length; i++){
             if(queryTokens[i].equals("NOT")){
-                
-                for (int j = i+1; j < queryTokens.length; j++, i++) {
-                    if(queryTokens[j].equals("AND") || queryTokens[j].equals("OR")|| queryTokens[j].equals("NOT")){
-                        break;
-                    }
-                    removeedTokens.add(queryTokens[j]);
-                }
+                i++;
                 continue;
-            }else if(queryTokens[i].equals("AND")){
-                for (int j = i+1; j < queryTokens.length; j++, i++) {
-                    if(queryTokens[j].equals("AND") || queryTokens[j].equals("OR")|| queryTokens[j].equals("NOT")){
-                        break;
-                    }
-                    andTokens.add(queryTokens[j]);
-                }
+
+            }else if(queryTokens[i].equals("OR") || queryTokens[i].equals("AND"))
                 continue;
-            }else if(queryTokens[i].equals("OR")){
-                for (int j = i+1; j < queryTokens.length; j++, i++) {
-                    if(queryTokens[j].equals("AND") || queryTokens[j].equals("OR")|| queryTokens[j].equals("NOT")){
-                        break;
-                    }
-                    orTokens.add(queryTokens[j]);
-                }
-                continue;
-            }
-            andTokens.add(queryTokens[i]);
+            tokens.add(queryTokens[i]);
         }
-        for(String token : removeedTokens){
-            if(andTokens.contains(token)){
-                andTokens.remove(token);
-            }
-        }
-        tokens.addAll(orTokens);
-        tokens.addAll(andTokens);
+        System.out.println(tokens);
         return tokens;
     }
     
